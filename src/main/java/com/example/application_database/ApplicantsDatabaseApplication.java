@@ -1,4 +1,4 @@
-package com.example.ApplicantsDatabase;
+package com.example.application_database;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

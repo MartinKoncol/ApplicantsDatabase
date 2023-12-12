@@ -14,6 +14,9 @@ public class Applicant {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
+    @Column(name = "cluid")
+    private int cluid;
+
     @Column(name = "title")
     private String title;
 
@@ -33,6 +36,7 @@ public class Applicant {
     private String email;
 
     public Applicant(long id,
+                     int cluid,
                      String title,
                      String firstName,
                      String lastName,
@@ -40,6 +44,7 @@ public class Applicant {
                      String phone,
                      String email) {
         this.id = id;
+        this.cluid = cluid;
         this.title = title;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -52,11 +57,12 @@ public class Applicant {
     public String toString() {
         return "Applicant{" +
                 "id=" + id +
+                ", cluid=" + cluid +
                 ", title='" + title + '\'' +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", currentPosition='" + currentPosition + '\'' +
-                ", phone=" + phone +
+                ", phone='" + phone + '\'' +
                 ", email='" + email + '\'' +
                 '}';
     }

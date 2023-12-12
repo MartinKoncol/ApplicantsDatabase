@@ -1,12 +1,14 @@
 package com.example.application_database.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Entity
 @Table(name = "technologies")
 public class Technology {
 
@@ -25,14 +27,6 @@ public class Technology {
 
     @Column(name = "note")
     private String note;
-
-    public Technology(long id,int cluid, String technology, int level, String note) {
-        this.id = id;
-        this.cluid=cluid;
-        this.knownTechnology = technology;
-        this.level = level;
-        this.note = note;
-    }
 
     @Override
     public String toString() {

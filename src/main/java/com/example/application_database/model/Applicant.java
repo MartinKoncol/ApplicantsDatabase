@@ -1,20 +1,24 @@
 package com.example.application_database.model;
 
 import jakarta.persistence.*;
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
+
 @Data
 @NoArgsConstructor
-@Table(name = "applicants")
+@AllArgsConstructor
+@Entity
+@Table(name = "applicants", uniqueConstraints = {@UniqueConstraint(columnNames = {"cluid"})})
 public class Applicant {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
-    @Column(name = "cluid")
+    @Column(name="cluid")
     private int cluid;
 
     @Column(name = "title")
@@ -34,24 +38,6 @@ public class Applicant {
 
     @Column(name = "email")
     private String email;
-
-    public Applicant(long id,
-                     int cluid,
-                     String title,
-                     String firstName,
-                     String lastName,
-                     String currentPosition,
-                     String phone,
-                     String email) {
-        this.id = id;
-        this.cluid = cluid;
-        this.title = title;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.currentPosition = currentPosition;
-        this.phone = phone;
-        this.email = email;
-    }
 
     @Override
     public String toString() {

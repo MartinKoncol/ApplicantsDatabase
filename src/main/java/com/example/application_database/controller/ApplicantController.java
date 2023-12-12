@@ -1,10 +1,11 @@
 package com.example.application_database.controller;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
-import com.example.application_database.repository.TechnologyRepository;
+import com.example.application_database.dto.ApplicantDTO;
+import com.example.application_database.service.interfaces.ApplicantService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,123 +20,62 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.application_database.model.Applicant;
-import com.example.application_database.repository.ApplicantRepository;
-import org.springframework.web.server.ResponseStatusException;
 
 @CrossOrigin(origins = "http://localhost:8081")
 @RestController
 @RequestMapping("/api")
 public class ApplicantController {
 
-    ApplicantRepository applicantRepository;
-    TechnologyRepository technologyRepository;
+    private final ModelMapper modelMapper;
+    private final ApplicantService applicantService;
 
     @Autowired
-    public ApplicantController(ApplicantRepository applicantRepository,
-                               TechnologyRepository technologyRepository) {
-        this.applicantRepository = applicantRepository;
-        this.technologyRepository = technologyRepository;
+    public ApplicantController(ApplicantService applicantService, ModelMapper modelMapper) {
+        super();
+        this.applicantService = applicantService;
+        this.modelMapper = modelMapper;
     }
 
     @GetMapping("/applicants")
-    public ResponseEntity<List<Applicant>> getAllApplicants() {
-        try {
-            List<Applicant> applicants = new ArrayList<>();
+    public List<ApplicantDTO> getAllApplicants() {
 
-            applicants.addAll(applicantRepository.findAll());
-
-            if (applicants.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            }
-
-            return new ResponseEntity<>(applicants, HttpStatus.OK);
-
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        return applicantService.getAllApplicants().stream().map(applicants -> modelMapper.map(applicants, ApplicantDTO.class))
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/applicants/{id}")
-    public ResponseEntity<Applicant> getApplicantById(@PathVariable("id") long id) {
-        Optional<Applicant> applicantData = applicantRepository.findById(id);
+    public ResponseEntity<ApplicantDTO> getApplicantById(@PathVariable(name = "id") Long id) {
 
-        if (applicantData.isPresent()) {
-            return new ResponseEntity<>(applicantData.get(), HttpStatus.OK);
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
+        Applicant applicant = applicantService.getApplicantById(id);
+        ApplicantDTO postResponse = modelMapper.map(applicant, ApplicantDTO.class);
+
+        return ResponseEntity.ok().body(postResponse);
     }
 
     @PostMapping("/applicants")
-    public ResponseEntity<Applicant> createApplicant(@RequestBody Applicant applicantIn) {
-        try {
-            Applicant applicant = applicantRepository
-                    .save(new Applicant(applicantIn.getId(),
-                            applicantIn.getCluid(),
-                            applicantIn.getTitle(),
-                            applicantIn.getFirstName(),
-                            applicantIn.getLastName(),
-                            applicantIn.getCurrentPosition(),
-                            applicantIn.getPhone(),
-                            applicantIn.getEmail()));
-            return new ResponseEntity<>(applicant, HttpStatus.CREATED);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public ResponseEntity<ApplicantDTO> createPost(@RequestBody ApplicantDTO applicantDTO) {
+
+        Applicant postRequest = modelMapper.map(applicantDTO, Applicant.class);
+        Applicant applicant = applicantService.createApplicant(postRequest);
+        ApplicantDTO postResponse = modelMapper.map(applicant, ApplicantDTO.class);
+
+        return new ResponseEntity<>(postResponse, HttpStatus.CREATED);
     }
 
     @PutMapping("/applicants/{id}")
-    public ResponseEntity<Applicant> updateApplicant(@PathVariable("id") long id, @RequestBody Applicant applicantIn) {
-        Optional<Applicant> applicantData = applicantRepository.findById(id);
+    public ResponseEntity<ApplicantDTO> updatePost(@PathVariable long id, @RequestBody ApplicantDTO applicantDTO) {
 
-        if (applicantData.isPresent()) {
-            Applicant applicant= applicantData.get();
-            applicant.setCluid(applicantIn.getCluid());
-            applicant.setTitle(applicantIn.getTitle());
-            applicant.setFirstName(applicantIn.getFirstName());
-            applicant.setLastName(applicantIn.getLastName());
-            applicant.setCurrentPosition(applicantIn.getCurrentPosition());
-            applicant.setPhone(applicantIn.getPhone());
-            applicant.setEmail(applicantIn.getEmail());
-            return new ResponseEntity<>(applicantRepository.save(applicant), HttpStatus.OK);
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
+        Applicant postRequest = modelMapper.map(applicantDTO, Applicant.class);
+        Applicant post = applicantService.updateApplicant(id, postRequest);
+        ApplicantDTO postResponse = modelMapper.map(post, ApplicantDTO.class);
+
+        return ResponseEntity.ok().body(postResponse);
     }
 
     @DeleteMapping("/applicants/{id}")
-    public ResponseEntity<HttpStatus> deleteApplicant(@PathVariable("id") long id) {
-        try {
-            applicantRepository.deleteById(id);
-            throw new ResponseStatusException(HttpStatus.NO_CONTENT);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @DeleteMapping("/applicants")
-    public ResponseEntity<HttpStatus> deleteAllApplicants() {
-        try {
-            applicantRepository.deleteAll();
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-    }
-
-    @GetMapping("/applicants/all")
-    public ResponseEntity<List<Applicant>> findAll() {
-        try {
-            List<Applicant> basics = applicantRepository.findAll();
-
-            if (basics.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.NO_CONTENT);
-            }
-            return new ResponseEntity<>(basics, HttpStatus.OK);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public ResponseEntity<HttpStatus> deletePost(@PathVariable(name = "id") Long id) {
+        applicantService.deleteApplicant(id);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 }

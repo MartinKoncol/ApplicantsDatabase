@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.example.application_database.repository.TechnologyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,11 +16,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.application_database.model.Applicant;
 import com.example.application_database.repository.ApplicantRepository;
+import org.springframework.web.server.ResponseStatusException;
 
 @CrossOrigin(origins = "http://localhost:8081")
 @RestController
@@ -27,30 +28,30 @@ import com.example.application_database.repository.ApplicantRepository;
 public class ApplicantController {
 
     ApplicantRepository applicantRepository;
+    TechnologyRepository technologyRepository;
 
     @Autowired
-
-    public ApplicantController(ApplicantRepository applicantRepository) {
+    public ApplicantController(ApplicantRepository applicantRepository,
+                               TechnologyRepository technologyRepository) {
         this.applicantRepository = applicantRepository;
+        this.technologyRepository = technologyRepository;
     }
 
     @GetMapping("/applicants")
-    public ResponseEntity<List<Applicant>> getAllApplicants(@RequestParam(required = false) String title) {
+    public ResponseEntity<List<Applicant>> getAllApplicants() {
         try {
             List<Applicant> applicants = new ArrayList<>();
 
-            if (title == null)
-                applicants.addAll(applicantRepository.findAll());
-            else
-                applicants.addAll(applicantRepository.findByTitleContaining(title));
+            applicants.addAll(applicantRepository.findAll());
 
             if (applicants.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
 
             return new ResponseEntity<>(applicants, HttpStatus.OK);
+
         } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -61,7 +62,7 @@ public class ApplicantController {
         if (applicantData.isPresent()) {
             return new ResponseEntity<>(applicantData.get(), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
     }
 
@@ -70,6 +71,7 @@ public class ApplicantController {
         try {
             Applicant applicant = applicantRepository
                     .save(new Applicant(applicantIn.getId(),
+                            applicantIn.getCluid(),
                             applicantIn.getTitle(),
                             applicantIn.getFirstName(),
                             applicantIn.getLastName(),
@@ -78,7 +80,7 @@ public class ApplicantController {
                             applicantIn.getEmail()));
             return new ResponseEntity<>(applicant, HttpStatus.CREATED);
         } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -88,6 +90,7 @@ public class ApplicantController {
 
         if (applicantData.isPresent()) {
             Applicant applicant= applicantData.get();
+            applicant.setCluid(applicantIn.getCluid());
             applicant.setTitle(applicantIn.getTitle());
             applicant.setFirstName(applicantIn.getFirstName());
             applicant.setLastName(applicantIn.getLastName());
@@ -96,7 +99,7 @@ public class ApplicantController {
             applicant.setEmail(applicantIn.getEmail());
             return new ResponseEntity<>(applicantRepository.save(applicant), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
     }
 
@@ -104,9 +107,9 @@ public class ApplicantController {
     public ResponseEntity<HttpStatus> deleteApplicant(@PathVariable("id") long id) {
         try {
             applicantRepository.deleteById(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT);
         } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -116,7 +119,7 @@ public class ApplicantController {
             applicantRepository.deleteAll();
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }
@@ -127,11 +130,11 @@ public class ApplicantController {
             List<Applicant> basics = applicantRepository.findAll();
 
             if (basics.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                throw new ResponseStatusException(HttpStatus.NO_CONTENT);
             }
             return new ResponseEntity<>(basics, HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

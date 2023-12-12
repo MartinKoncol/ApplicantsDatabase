@@ -10,7 +10,7 @@ Správa uchazečů:
 - přidání/odebrání/úprava
 
 Správa technologií:
-- seznam
+- seznam  
 - detail
 - přidání/odebrání/úprava
   Technologie:
